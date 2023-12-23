@@ -1,0 +1,86 @@
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller's Admin Page</title>
+</head>
+<body>
+    <form>
+        <label for="productSellingPrice">Selling Price : </label>
+        <input type="number" name="productSellingPrice" id="productSellingPrice">
+        <br><br>
+        <label for="productName">Product Name : </label>
+        <input type="text" name="productName" id="productName">
+        <br><br>
+        <button type="button" id="add-product-btn">Add Product</button>
+    </form>
+    <h1>Products</h1>
+    <ul id="listOfProducts"></ul>
+    <h2>Total Value Worth of Products : Rs.
+    <label for="totalSellingPrice" id="totalSellingPrice"></label>
+    /- </h2>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
+    <script>
+        const addProductBtn = document.getElementById("add-product-btn")
+        var totalSellingPrice = 0
+
+        addProductBtn.addEventListener("click", saveToCloud)
+
+        window.addEventListener("DOMContentLoaded", (obj) => {
+            axios.get("https://crudcrud.com/api/9b647bd775464d9b80fc754147aeaa9c/products")
+            .then((response) => {
+                for (var i = 0; i < response.data.length; i++) {
+                    showProductsOnScreen(response.data[i])
+                }
+            })
+        })
+
+        function saveToCloud(event) {
+            event.preventDefault()
+            const productName = document.getElementById("productName").value
+            const productSellingPrice = document.getElementById("productSellingPrice").value
+            
+            const obj = {
+                productName,
+                productSellingPrice
+            }
+            
+            axios.post("https://crudcrud.com/api/9b647bd775464d9b80fc754147aeaa9c/products", obj)
+            .then((response) => showProductsOnScreen(response.data))
+            .catch((err) => {
+                document.body.innerHTML = document.body.innerHTML + "<h4> Something went wrong. </h4>"
+            })
+
+            document.getElementById("productSellingPrice").value = ""
+            document.getElementById("productName").value = ""
+        }
+
+        function showProductsOnScreen(obj) {
+            const parentElement = document.getElementById("listOfProducts")
+            const childElement = document.createElement("li")
+            childElement.textContent = obj.productSellingPrice + " - " + obj.productName + "            "
+            totalSellingPrice += Number(obj.productSellingPrice)
+            document.getElementById("totalSellingPrice").innerHTML = totalSellingPrice
+
+
+            const deleteButton = document.createElement("input")
+            deleteButton.type = "button"
+            deleteButton.value = "Delete"
+
+            childElement.appendChild(deleteButton)
+            parentElement.appendChild(childElement)
+
+            deleteButton.addEventListener("click",function(e){
+                e.preventDefault();
+                base_url = "https://crudcrud.com/api/9b647bd775464d9b80fc754147aeaa9c/products/"
+                axios.delete(base_url + obj._id);
+                parentElement.removeChild(childElement);
+                totalSellingPrice -= Number(obj.productSellingPrice);
+                document.getElementById("totalSellingPrice").innerHTML = totalSellingPrice;
+            });
+            
+        }
+    </script>
+
+
+
+ </body></html>
